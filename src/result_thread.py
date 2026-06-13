@@ -4,8 +4,12 @@ import numpy as np
 import sounddevice as sd
 import tempfile
 import wave
-import webrtcvad
 from PyQt5.QtCore import QThread, QMutex, pyqtSignal
+try:
+    import webrtcvad
+    _has_webrtcvad = True
+except ImportError:
+    _has_webrtcvad = False
 from collections import deque
 from threading import Event
 
@@ -124,7 +128,11 @@ class ResultThread(QThread):
         recording_mode = recording_options.get('recording_mode') or 'continuous'
         vad = None
         if recording_mode in ('voice_activity_detection', 'continuous'):
-            vad = webrtcvad.Vad(2)  # VAD aggressiveness: 0 to 3, 3 being the most aggressive
+            if _has_webrtcvad:
+                vad = webrtcvad.Vad(2)
+            else:
+                ConfigManager.console_print("webrtcvad not available; falling back to press_to_toggle mode")
+                recording_mode = 'press_to_toggle'
             speech_detected = False
             silent_frame_count = 0
 
