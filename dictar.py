@@ -7,10 +7,20 @@ import subprocess
 import sys
 import tempfile
 import os
+import numpy as np
+import wave
 from faster_whisper import WhisperModel
 
 MODEL_SIZE = "medium"
 LANGUAGE = "es"
+AUDIO_DEVICE = "plughw:2,0"
+
+def tiene_voz(wav_path, umbral_rms=200):
+    with wave.open(wav_path, "rb") as wf:
+        frames = wf.readframes(wf.getnframes())
+        audio = np.frombuffer(frames, dtype=np.int16)
+        rms = np.sqrt(np.mean(audio.astype(np.float64) ** 2))
+        return rms >= umbral_rms, rms
 
 print("Cargando modelo...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
@@ -24,7 +34,7 @@ while True:
         wav_path = f.name
 
     proc = subprocess.Popen(
-        ["arecord", "-f", "cd", "-r", "16000", "-c", "1", wav_path],
+        ["arecord", "-D", AUDIO_DEVICE, "-f", "cd", "-r", "16000", "-c", "1", wav_path],
         stderr=subprocess.DEVNULL,
     )
 
@@ -32,8 +42,15 @@ while True:
     proc.terminate()
     proc.wait()
 
+    hay_voz, rms = tiene_voz(wav_path)
+    if not hay_voz:
+        print(f"(sin voz detectada, RMS={rms:.0f})")
+        os.unlink(wav_path)
+        print()
+        continue
+
     print("Transcribiendo...", end=" ", flush=True)
-    segments, _ = model.transcribe(wav_path, language=LANGUAGE)
+    segments, _ = model.transcribe(wav_path, language=LANGUAGE, vad_filter=True)
     texto = " ".join(s.text.strip() for s in segments)
     os.unlink(wav_path)
 
