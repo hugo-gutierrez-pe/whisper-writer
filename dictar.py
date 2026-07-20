@@ -15,7 +15,7 @@ MODEL_SIZE = "medium"
 LANGUAGE = "es"
 AUDIO_DEVICE = "plughw:2,0"
 
-def tiene_voz(wav_path, umbral_rms=800):
+def tiene_voz(wav_path, umbral_rms=250):
     with wave.open(wav_path, "rb") as wf:
         frames = wf.readframes(wf.getnframes())
         audio = np.frombuffer(frames, dtype=np.int16)
