@@ -15,12 +15,21 @@ MODEL_SIZE = "medium"
 LANGUAGE = "es"
 AUDIO_DEVICE = "plughw:2,0"
 
-def tiene_voz(wav_path, umbral_rms=200):
+def tiene_voz(wav_path, umbral_rms=800):
     with wave.open(wav_path, "rb") as wf:
         frames = wf.readframes(wf.getnframes())
         audio = np.frombuffer(frames, dtype=np.int16)
         rms = np.sqrt(np.mean(audio.astype(np.float64) ** 2))
         return rms >= umbral_rms, rms
+
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=26", "3"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=21", "63"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
 
 print("Cargando modelo...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")

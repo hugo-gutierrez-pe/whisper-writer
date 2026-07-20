@@ -17,7 +17,7 @@ LANGUAGE = "es"
 MODEL = "whisper-large-v3-turbo"
 AUDIO_DEVICE = "plughw:2,0"
 
-def tiene_voz(wav_path, umbral_rms=200):
+def tiene_voz(wav_path, umbral_rms=800):
     with wave.open(wav_path, "rb") as wf:
         frames = wf.readframes(wf.getnframes())
         audio = np.frombuffer(frames, dtype=np.int16)
@@ -26,6 +26,16 @@ def tiene_voz(wav_path, umbral_rms=200):
 
 api_key = API_KEY_PATH.read_text().strip()
 client = Groq(api_key=api_key)
+
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=26", "3"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=21", "63"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
+
 print(f"Groq Whisper listo ({MODEL}).\n")
 
 while True:
