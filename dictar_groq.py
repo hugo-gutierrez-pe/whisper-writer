@@ -26,11 +26,7 @@ def tiene_voz(wav_path, umbral_rms=250):
 
 
 subprocess.run(
-    ["amixer", "-c", "2", "cset", "numid=26", "3"],
-    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-)
-subprocess.run(
-    ["amixer", "-c", "2", "cset", "numid=21", "63"],
+    ["amixer", "-c", "BRIO", "sset", "Mic", "100%"],
     stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
 )
 
@@ -45,7 +41,7 @@ while True:
     wav_path = os.path.join(tempfile.gettempdir(), "dictar_groq.wav")
 
     proc = subprocess.Popen(
-        ["pw-record", "--target=49", "--rate=16000", "--channels=1", wav_path],
+        ["pw-record", "--target=alsa_input.usb-046d_Logitech_BRIO_972B3D14-03.analog-stereo", "--rate=16000", "--channels=1", wav_path],
         stderr=subprocess.DEVNULL,
     )
 
