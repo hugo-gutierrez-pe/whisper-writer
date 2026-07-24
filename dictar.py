@@ -23,6 +23,15 @@ def tiene_voz(wav_path, umbral_rms=250):
         return rms >= umbral_rms, rms
 
 
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=26", "3"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
+subprocess.run(
+    ["amixer", "-c", "2", "cset", "numid=21", "63"],
+    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+)
+
 print("Cargando modelo...")
 model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
 print(f"Modelo '{MODEL_SIZE}' listo.\n")
